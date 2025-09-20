@@ -1,6 +1,6 @@
 // src/components/Layout.jsx
 import { Link, Outlet } from "react-router-dom";
-import image_logo from "../assets/image_logo.JPG";
+import image_logo from "../assets/image_logo.jpg";
 import Footer from "./Footer";
 
 function Layout() {
