@@ -1,4 +1,4 @@
-// src/components/ListComponent.jsx
+
 function ListComponent({ items }) {
   return (
     <div className="list">

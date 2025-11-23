@@ -1,12 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 
-// pages (but currently in components folder)
 import Home from "./components/Home";
 import About from "./components/About";
 import Projects from "./components/Projects";
 import Services from "./components/Services";
 import Contact from "./components/Contact";
+import UsersAdmin from "./components/UsersAdmin";
 
 function MainRouter() {
   return (
@@ -17,6 +17,11 @@ function MainRouter() {
         <Route path="projects" element={<Projects />} />
         <Route path="services" element={<Services />} />
         <Route path="contact" element={<Contact />} />
+        
+
+        {/* Admin */}
+        <Route path="admin/users" element={<UsersAdmin />} />
+
       </Route>
     </Routes>
   );
