@@ -1,11 +1,19 @@
-const API_BASE = import.meta.env.VITE_API_BASE;
-//const API_BASE = "http://localhost:3000/api";
+//const API_BASE = import.meta.env.VITE_API_BASE;
+const API_BASE = "http://localhost:3000/api";
 
 
 async function request(path, options = {}) {
+  const token = localStorage.getItem("token");
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers,
   });
 
   if (!res.ok) {
@@ -16,30 +24,40 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-export const api = {
-  // USERS
-  getUsers: () => request("/users"),  
-  
-  getUser: (id) => request(`/users/${id}`),
+ // AUTH
+export const api = 
+{
+  signup: (data) =>
+    request("/auth/signup", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
+  login: (data) =>
+    request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  // USERS
+  getUsers: () => request("/users"),
+  getUser: (id) => request(`/users/${id}`),
   createUser: (data) =>
     request("/users", {
       method: "POST",
       body: JSON.stringify(data),
     }),
-    
   updateUser: (id, data) =>
     request(`/users/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
-
   deleteUser: (id) =>
     request(`/users/${id}`, {
       method: "DELETE",
     }),
 
-  // PROJECTS 
+  // PROJECTS
   getProjects: () => request("/projects"),
   createProject: (data) =>
     request("/projects", {

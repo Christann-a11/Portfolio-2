@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import ListComponent from "../components/ListComponent";
 import { api } from "../api";
+import { useAuth } from "../context/AuthContext";
 
 import photo10 from "../assets/photo10.jpg";
 import photo11 from "../assets/photo11.jpg";
 import photo12 from "../assets/photo12.jpg";
-
 
 const staticProjects = [
   {
@@ -26,6 +26,8 @@ const staticProjects = [
 ];
 
 function Projects() {
+  const { user } = useAuth(); // <-- AUTH LOGIC ADDED
+
   const [projects, setProjects] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [msg, setMsg] = useState("");
@@ -66,7 +68,7 @@ function Projects() {
       setEditingId(null);
 
     } catch (err) {
-      setMsg("Something went wrong");
+      setMsg("You must be logged in to modify projects.");
     }
   };
 
@@ -87,7 +89,7 @@ function Projects() {
       setProjects((old) => old.filter((p) => p._id !== id));
       setMsg("Project deleted");
     } catch {
-      setMsg("Could not delete project");
+      setMsg("You must be logged in to delete projects.");
     }
   };
 
@@ -95,7 +97,7 @@ function Projects() {
     <section className="projects page">
       <h2>My Projects</h2>
 
-  
+      {/* STATIC PROJECTS LIST */}
       <ListComponent items={staticProjects} />
 
       <hr />
@@ -103,51 +105,57 @@ function Projects() {
       <h3>Manage Projects</h3>
       {msg && <p className="alert alert-info">{msg}</p>}
 
-      {/* form */}
-      <form onSubmit={handleSubmit} className="mb-4">
-        <input
-          name="title"
-          placeholder="Title"
-          className="form-control mb-2"
-          value={form.title}
-          onChange={handleChange}
-          required
-        />
+      {/* Only logged-in users can see the form */}
+      {user ? (
+        <form onSubmit={handleSubmit} className="mb-4">
+          <input
+            name="title"
+            placeholder="Title"
+            className="form-control mb-2"
+            value={form.title}
+            onChange={handleChange}
+            required
+          />
 
-        <descriptionarea
-          name="description"
-          placeholder="Description"
-          className="form-control mb-2"
-          rows="3"
-          value={form.description}
-          onChange={handleChange}
-        />
+          <textarea
+            name="description"
+            placeholder="Description"
+            className="form-control mb-2"
+            rows="3"
+            value={form.description}
+            onChange={handleChange}
+          />
 
-        <input
-          name="imagePath"
-          placeholder="Image URL"
-          className="form-control mb-3"
-          value={form.imagePath}
-          onChange={handleChange}
-        />
+          <input
+            name="imagePath"
+            placeholder="Image URL"
+            className="form-control mb-3"
+            value={form.imagePath}
+            onChange={handleChange}
+          />
 
-        <button className="btn btn-primary">
-          {editingId ? "Update" : "Add Project"}
-        </button>
-
-        {editingId && (
-          <button
-            type="button"
-            className="btn btn-secondary ms-2"
-            onClick={() => {
-              setEditingId(null);
-              setForm({ title: "", description: "", imagePath: "" });
-            }}
-          >
-            Cancel
+          <button className="btn btn-primary">
+            {editingId ? "Update Project" : "Add Project"}
           </button>
-        )}
-      </form>
+
+          {editingId && (
+            <button
+              type="button"
+              className="btn btn-secondary ms-2"
+              onClick={() => {
+                setEditingId(null);
+                setForm({ title: "", description: "", imagePath: "" });
+              }}
+            >
+              Cancel
+            </button>
+          )}
+        </form>
+      ) : (
+        <p className="text-danger">
+          You must be logged in to add or modify projects.
+        </p>
+      )}
 
       {/* Saved projects */}
       <h4>Saved Projects</h4>
@@ -170,20 +178,26 @@ function Projects() {
                 <h5>{p.title}</h5>
                 <p>{p.description}</p>
               </div>
-              <footer className="p-2 d-flex justify-content-between">
-                <button
-                  className="btn btn-sm btn-outline-primary"
-                  onClick={() => startEdit(p)}
-                >
-                  Edit
-                </button>
 
-                <button
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={() => remove(p._id)}
-                >
-                  Delete
-                </button>
+              <footer className="p-2 d-flex justify-content-between">
+                {/* Only logged-in users see EDIT & DELETE */}
+                {user && (
+                  <>
+                    <button
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => startEdit(p)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => remove(p._id)}
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
               </footer>
             </div>
           </article>

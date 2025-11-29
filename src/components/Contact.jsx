@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { useAuth } from "../context/AuthContext";
 
 function Contact() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [status, setStatus] = useState("");
 
-  // Public form 
+  // Public form (send message)
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -20,7 +22,6 @@ function Contact() {
   const [contacts, setContacts] = useState([]);
   const [editId, setEditId] = useState(null);
 
-  
   const [editForm, setEditForm] = useState({
     firstName: "",
     lastName: "",
@@ -29,11 +30,14 @@ function Contact() {
     message: "",
   });
 
+  // Load contacts only if logged in
   useEffect(() => {
+    if (!user) return; // guests don't need CRUD list
+
     api.getContacts()
       .then((data) => setContacts(data))
       .catch(() => setStatus("Could not load contacts."));
-  }, []);
+  }, [user]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -57,6 +61,7 @@ function Contact() {
         message: "",
       });
 
+      // Redirect after 1.5s
       setTimeout(() => navigate("/"), 1500);
 
     } catch (err) {
@@ -64,8 +69,10 @@ function Contact() {
     }
   };
 
-  // Start editing a contact 
+  // Start editing (only if logged in)
   const startEdit = (c) => {
+    if (!user) return setStatus("You must be logged in to edit contacts.");
+
     setEditId(c._id);
     setEditForm({
       firstName: c.firstName,
@@ -79,6 +86,8 @@ function Contact() {
   // Save edited contact
   const saveEdit = async (e) => {
     e.preventDefault();
+
+    if (!user) return setStatus("You must be logged in to update contacts.");
 
     try {
       const updated = await api.updateContact(editId, editForm);
@@ -105,6 +114,7 @@ function Contact() {
 
   // Delete contact
   const removeContact = async (id) => {
+    if (!user) return setStatus("You must be logged in to delete contacts.");
     if (!window.confirm("Delete contact?")) return;
 
     try {
@@ -188,16 +198,16 @@ function Contact() {
         </button>
       </form>
 
-      {/* CONTACT CRUD */}
+      {/* CRUD SECTION (Logged in only) */}
       <h3>Manage Contacts</h3>
 
-      {contacts.length === 0 && <p>No contacts saved yet.</p>}
+      {!user && <p className="text-danger">You must be logged in to view saved contacts.</p>}
 
-      {contacts.map((c) => (
+      {user && contacts.length === 0 && <p>No contacts saved yet.</p>}
+
+      {user && contacts.map((c) => (
         <div key={c._id} className="card p-3 mb-3">
-          <h5>
-            {c.firstName} {c.lastName}
-          </h5>
+          <h5>{c.firstName} {c.lastName}</h5>
           <p><strong>Email:</strong> {c.email}</p>
           <p><strong>Phone:</strong> {c.phone || "N/A"}</p>
           <p><strong>Message:</strong> {c.message}</p>
@@ -220,8 +230,8 @@ function Contact() {
         </div>
       ))}
 
-      {/* EDIT CONTACT FORM */}
-      {editId && (
+      {/* EDIT CONTACT FORM (Logged in only) */}
+      {user && editId && (
         <form onSubmit={saveEdit} className="card p-4 shadow-sm mt-4">
           <h4>Edit Contact</h4>
 
