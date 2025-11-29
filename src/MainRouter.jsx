@@ -9,6 +9,7 @@ import Contact from "./components/Contact";
 import UsersAdmin from "./components/UsersAdmin";
 import Login from "./components/login.jsx";
 import Register from "./components/register.jsx";
+//ensure that the cases match for render deployment
 
 function MainRouter() {
   return (
